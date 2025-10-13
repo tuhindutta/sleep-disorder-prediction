@@ -9,12 +9,12 @@ import argparse
 def run_preprocess(inp:str, otp:str, artifacts_path:str):
     df = pd.read_csv(inp).iloc[:, 1:]
     df.columns = ['_'.join(i.split(' ')).lower() for i in df.columns]
-    base = df.copy()
+    # base = df.copy()
 
     features2_exclude_from_scaling = ['sleep_disorder']
 
     def drop_fields(df, *args):
-        global features2_exclude_from_scaling
+        nonlocal features2_exclude_from_scaling
         features2_exclude_from_scaling += list(args)
         return df.drop(list(args), axis=1)
 

@@ -36,7 +36,6 @@ def run_training(inp:str, cnf:str):
         kf = KFold(n_splits=kfold_split, shuffle=True, random_state=42)
         cv = CrossVal(model, kf)
         cv.fit(data, y)
-        cv_score = cv.cv_score
         accuracy = cv.cv_score.get('accuracy')
         roc_auc_ovr = cv.cv_score.get('roc_auc_ovr')
         mlflow.log_param('num_features', num_features)
@@ -44,7 +43,7 @@ def run_training(inp:str, cnf:str):
         mlflow.log_metric('accuracy', accuracy)
         mlflow.log_metric('roc_auc_ovr', roc_auc_ovr)
         sig = infer_signature(data, model.predict(data))
-        model_info = mlflow.sklearn.log_model(
+        mlflow.sklearn.log_model(
             sk_model=model,
             name="sleep-model",
             signature= sig,
