@@ -10,7 +10,7 @@ pipeline {
         }
       }
     }
-    stae('Build') {
+    stage('Build') {
         steps {
             script {
                 if (isUnix()) {
