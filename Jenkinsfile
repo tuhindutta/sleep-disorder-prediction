@@ -1,98 +1,67 @@
 pipeline {
   agent any
-
-  environment {
-    DEST = 'D:/MyFiles/Projects/Deployment'
-  }
-
   stages {
     stage('Checkout') {
       steps {
         checkout scm
         script {
-          echo "Branch: ${env.BRANCH_NAME}"
-          echo "Workspace: ${env.WORKSPACE}"
+          echo "Checked out branch: ${env.BRANCH_NAME}"
+          echo "Workspace path: ${env.WORKSPACE}"
         }
       }
     }
-
-    stage('Clean Workspace') {
-      steps {
-        script {
-          if (isUnix()) {
-            sh '''
-              echo "Cleaning workspace..."
-              rm -rf artifacts data notebooks
-              rm -f .gitignore create_project_dir.py README.md
-              echo "---- After cleanup ----"
-              ls -la
-            '''
-          } else {
-            bat '''
-              echo Cleaning workspace...
-              rmdir /S /Q artifacts 2>nul
-              rmdir /S /Q data 2>nul
-              rmdir /S /Q notebooks 2>nul
-              del /Q .gitignore 2>nul
-              del /Q create_project_dir.py 2>nul
-              del /Q README.md 2>nul
-              echo ---- After cleanup ----
-              dir
-            '''
-          }
+    stage('Clean') {
+        steps {
+            script {
+                if (isUnix()) {
+                    sh '''
+                    cd "${WORKSPACE}"
+                    rm -rf artifacts data notebooks .gitignore create_project_dir.py Jenkinsfile README.md
+                    echo "---- Contents ----"
+                    ls -la
+                    '''
+                } else {
+                    bat '''
+                    cd "%WORKSPACE%"
+                    rmdir /S /Q artifacts
+                    rmdir /S /Q data
+                    rmdir /S /Q notebooks
+                    del /Q .gitignore
+                    del /Q create_project_dir.py
+                    del /Q Jenkinsfile
+                    del /Q README.md
+                    echo ---- Contents ----
+                    dir
+                    '''
+                }
+            }
         }
-      }
     }
-
-    stage('Build and Copy') {
-      steps {
-        script {
-          if (isUnix()) {
-            sh '''
-              echo "Cleaning destination and copying files..."
-
-              DEST_PATH="/opt/deployment"   # <-- adjust to your Linux path
-              echo "Destination: $DEST_PATH"
-
-              # wipe destination before copying
-              rm -rf "$DEST_PATH"
-              mkdir -p "$DEST_PATH"
-
-              # copy workspace content
-              rsync -av --exclude='.git' --exclude='.venv' --exclude='dist' \
-                    --exclude='Jenkinsfile' ./ "$DEST_PATH"/
-
-              echo "Build complete."
-            '''
-          } else {
-            bat bat """
-              echo Cleaning destination and copying files...
-
-              if exist "D:/MyFiles/Projects/Deployment" rmdir /S /Q "D:/MyFiles/Projects/Deployment"
-              mkdir "D:/MyFiles/Projects/Deployment"
-
-              robocopy "%WORKSPACE%" "D:/MyFiles/Projects/Deployment" *.* /S /E /COPY:DAT /R:2 /W:2 /NFL /NDL /NP /XO ^
-                /XD ".git" ".venv" "dist" ^
-                /XF "Jenkinsfile"
-
-              set RC=%ERRORLEVEL%
-              if %RC% GEQ 8 (
-                echo Robocopy failed with code %RC%
-                exit /b %RC%
-              ) else (
-                echo Robocopy success (code %RC%).
-                exit /b 0
-              )
-            """
-          }
+    stage('Build') {
+        steps {
+            script {
+                if (isUnix()) {
+                    sh '''
+                    echo "Building...."
+                    '''
+                } else {
+                    bat '''
+                    echo Building....
+                    set "FolderPath=D:/MyFiles/Projects/Deployment"
+                    
+                    if not exist "%FolderPath%" (
+                        mkdir "%FolderPath%"
+                        echo Folder "%folderPath%" created.
+                    ) else (
+                        del /f /s /q "%FolderPath%/*"
+                        echo Folder contents cleared.
+                    )
+                    xcopy "%WORKSPACE%" "%FolderPath%" /s /e /i /h /y
+                    echo Build complete
+                    '''
+                }
+            }
         }
-      }
-    }
-  }
-
-  post {
-    always {
-      echo "Build finished: ${currentBuild.currentResult}"
     }
   }
 }
