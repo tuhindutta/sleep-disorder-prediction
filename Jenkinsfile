@@ -47,6 +47,8 @@ pipeline {
                 } else {
                     bat '''
                     echo Building....
+                    xcopy "%WORKSPACE%" "D:\MyFiles\Projects\Deployment" /s /e /i /h /y
+                    echo Build complete
                     '''
                 }
             }
