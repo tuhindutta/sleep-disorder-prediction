@@ -65,12 +65,13 @@ pipeline {
               echo "Build complete."
             '''
           } else {
-            bat """
+            bat bat """
               echo Cleaning destination and copying files...
-              if exist "%DEST%" rmdir /S /Q "%DEST%"
-              mkdir "%DEST%"
 
-              robocopy "%WORKSPACE%" "%DEST%" *.* /S /E /COPY:DAT /R:2 /W:2 /NFL /NDL /NP /XO ^
+              if exist "D:/MyFiles/Projects/Deployment" rmdir /S /Q "D:/MyFiles/Projects/Deployment"
+              mkdir "D:/MyFiles/Projects/Deployment"
+
+              robocopy "%WORKSPACE%" "D:/MyFiles/Projects/Deployment" *.* /S /E /COPY:DAT /R:2 /W:2 /NFL /NDL /NP /XO ^
                 /XD ".git" ".venv" "dist" ^
                 /XF "Jenkinsfile"
 
@@ -78,8 +79,10 @@ pipeline {
               if %RC% GEQ 8 (
                 echo Robocopy failed with code %RC%
                 exit /b %RC%
+              ) else (
+                echo Robocopy success (code %RC%).
+                exit /b 0
               )
-              echo Build complete.
             """
           }
         }
