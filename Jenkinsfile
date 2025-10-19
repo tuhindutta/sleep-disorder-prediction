@@ -4,7 +4,7 @@ pipeline {
   environment {
     VENV_DIR = '.venv'
     ARTIFACT_DIR = 'dist'
-    PYPI = 'http://127.0.0.1:8081/'
+    PYPI = 'http://127.0.0.1:8081/repository/pypi-internal/'
   }
 
   stages {
@@ -76,7 +76,7 @@ pipeline {
             echo Publicshing to Nexus....
             call %VENV_DIR%\\Scripts\\activate
             python -m pip install --upgrade twine
-            python -m twine upload --%PYPI% %NEXUS_REPO_URL% %ARTIFACT_DIR%\\*
+            python -m twine upload --repository-url %PYPI% %NEXUS_REPO_URL% %ARTIFACT_DIR%\\*
             call deactivate
             echo Published in Nexus.
           """
