@@ -1,6 +1,13 @@
 pipeline {
   agent any
+
+  environment {
+    VENV_DIR = '.venv'
+    ARTIFACT_DIR = 'dist'
+  }
+
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
@@ -10,18 +17,11 @@ pipeline {
         }
       }
     }
+
     stage('Clean') {
         steps {
             script {
-                if (isUnix()) {
-                    sh '''
-                    cd "${WORKSPACE}"
-                    rm -rf artifacts data notebooks .gitignore create_project_dir.py Jenkinsfile README.md
-                    echo "---- Contents ----"
-                    ls -la
-                    '''
-                } else {
-                    bat '''
+                bat '''
                     cd "%WORKSPACE%"
                     rmdir /S /Q artifacts
                     rmdir /S /Q data
@@ -36,16 +36,11 @@ pipeline {
                 }
             }
         }
-    }
+
     stage('Build') {
         steps {
             script {
-                if (isUnix()) {
-                    sh '''
-                    echo "Building...."
-                    '''
-                } else {
-                    bat '''
+                bat '''
                     echo Building....
                     set "FolderPath=D:/MyFiles/Projects/Deployment"
                     
@@ -56,12 +51,26 @@ pipeline {
                         del /f /s /q "%FolderPath%/*"
                         echo Folder contents cleared.
                     )
-                    xcopy "%WORKSPACE%" "%FolderPath%" /s /e /i /h /y
+                    echo Creating virtual environment...
+                    python -m venv %VENV_DIR%
+                    call %VENV_DIR%\\Scripts\\activate
+                    python -m pip install --upgrade pip
+                    python -m pip install --upgrade build wheel setuptools
+                    echo Building wheel...
+                    python -m build
+                    call deactivate
                     echo Build complete
                     '''
                 }
             }
         }
+
+    stage('Archive artifacts') {
+      steps {
+        script {
+          archiveArtifacts artifacts: "${ARTIFACT_DIR}/*", fingerprint: true, onlyIfSuccessful: true
+        }
+      }
     }
   }
 }

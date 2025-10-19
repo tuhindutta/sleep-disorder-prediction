@@ -1,4 +1,4 @@
-python .\src\preprocess.py -i "C:\Users\Tuhin Kumar Dutta\.cache\kagglehub\datasets\varishabatool\disorder\versions\1\Sleep_health_and_lifestyle_dataset.csv" -o .\data\processed\ -a .\models\
+python .\sleep_disorder\preprocess.py -i "C:\Users\Tuhin Kumar Dutta\.cache\kagglehub\datasets\varishabatool\disorder\versions\1\Sleep_health_and_lifestyle_dataset.csv" -o .\..\data\processed\ -a .\..\artifacts\
 
 python .\src\train.py -i .\data\processed\processed_data.csv -a .\models\
 

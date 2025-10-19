@@ -1,12 +1,29 @@
 import os
 import pandas as pd
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import MinMaxScaler
+from sleep_disorder.utilities import Scaler
 import pickle
 import argparse
+from sleep_disorder.utilities import write_list
 
 
 def run_preprocess(inp:str, otp:str, artifacts_path:str):
+
+    """
+    Data preprocessing function.
+
+    This function takes the raw input csv path of data, output path for processed data,
+    artifacts parent directory path to save the scaler.
+
+    Args:
+        inp (str): Raw input csv path of data.
+        otp (str): Output path for processed data.
+        artifacts_path (str): Artifacts parent directory.
+
+    Returns:
+        string: Success confirmation message.
+    """
+
     df = pd.read_csv(inp).iloc[:, 1:]
     df.columns = ['_'.join(i.split(' ')).lower() for i in df.columns]
     # base = df.copy()
@@ -48,16 +65,21 @@ def run_preprocess(inp:str, otp:str, artifacts_path:str):
 
     features2_exclude_from_scaling = list(set(features2_exclude_from_scaling).intersection(set(df.columns)))
 
-    scaler = MinMaxScaler()
-    scaled_df = df.drop(features2_exclude_from_scaling, axis=1)
-    scaled_df = pd.DataFrame(scaler.fit_transform(scaled_df), columns=scaled_df.columns)
-    df = pd.concat([scaled_df, df[features2_exclude_from_scaling]], axis=1)
+    write_list(features2_exclude_from_scaling,
+               os.path.join(artifacts_path, 'features2_exclude_from_scaling.txt'))
+    # scaler = Scaler(features2_exclude_from_scaling)
+    # df = scaler.fit_transform(df)
+    # scaled_df = df.drop(features2_exclude_from_scaling, axis=1)
+    # scaled_df = pd.DataFrame(scaler.fit_transform(scaled_df), columns=scaled_df.columns)
+    # df = pd.concat([scaled_df, df[features2_exclude_from_scaling]], axis=1)
 
     df.to_csv(otp, index=False)
 
-    scaler_path = os.path.join(artifacts_path, 'scaler.pkl')
-    with open(scaler_path, 'wb') as file:
-        pickle.dump(scaler, file)
+    # scaler_path = os.path.join(artifacts_path, 'scaler.pkl')
+    # with open(scaler_path, 'wb') as file:
+    #     pickle.dump(scaler, file)
+
+    return "SUCCESS"
 
 
 def main():
