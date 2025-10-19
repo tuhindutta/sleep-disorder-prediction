@@ -4,6 +4,7 @@ pipeline {
   environment {
     VENV_DIR = '.venv'
     ARTIFACT_DIR = 'dist'
+    PYPI = 'http://127.0.0.1:8081/'
   }
 
   stages {
@@ -29,7 +30,6 @@ pipeline {
                     del /Q .gitignore
                     del /Q create_project_dir.py
                     del /Q Jenkinsfile
-                    del /Q README.md
                     echo ---- Contents ----
                     dir
                     '''
@@ -65,6 +65,25 @@ pipeline {
             }
         }
 
+    stage('Publish to Nexus') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'nexus-cred',
+          usernameVariable: 'TWINE_USERNAME',
+          passwordVariable: 'TWINE_PASSWORD'
+        )]) {
+          bat """
+            echo Publicshing to Nexus....
+            call %VENV%\\Scripts\\activate
+            python -m pip install --upgrade twine
+            python -m twine upload --%PYPI% %NEXUS_REPO_URL% %ARTIFACT_DIR%\\*
+            call deactivate
+            echo Published in Nexus.
+          """
+        }
+      }
+    }
+
     stage('Archive artifacts') {
       steps {
         script {
@@ -72,5 +91,6 @@ pipeline {
         }
       }
     }
+
   }
 }
