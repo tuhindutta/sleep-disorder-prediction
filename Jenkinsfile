@@ -74,7 +74,7 @@ pipeline {
         )]) {
           bat """
             echo Publicshing to Nexus....
-            call %VENV%\\Scripts\\activate
+            call %VENV_DIR%\\Scripts\\activate
             python -m pip install --upgrade twine
             python -m twine upload --%PYPI% %NEXUS_REPO_URL% %ARTIFACT_DIR%\\*
             call deactivate
