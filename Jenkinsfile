@@ -46,15 +46,15 @@ pipeline {
             sh """
               python3 -m venv '${VENV_DIR}'
               . '${VENV_DIR}/bin/activate'
-              python -m pip install --upgrade pip build wheel setuptools
-              python -m build
+              python3 -m pip install --upgrade pip build wheel setuptools
+              python3 -m build
             """
           } else {
             bat """
-              python -m venv %VENV_DIR%
+              python3 -m venv %VENV_DIR%
               call %VENV_DIR%\\Scripts\\activate
-              python -m pip install --upgrade pip build wheel setuptools
-              python -m build
+              python3 -m pip install --upgrade pip build wheel setuptools
+              python3 -m build
               call deactivate
             """
           }
@@ -73,15 +73,14 @@ pipeline {
             if (isUnix()) {
               sh """
                 . '${VENV_DIR}/bin/activate'
-                python -m pip install --upgrade twine
-                # Twine picks up TWINE_USERNAME/TWINE_PASSWORD from env
-                python -m twine upload --repository-url '${PYPI}' '${ARTIFACT_DIR}'/*
+                python3 -m pip install --upgrade twine
+                python3 -m twine upload --repository-url '${PYPI}' '${ARTIFACT_DIR}'/*
               """
             } else {
               bat """
                 call %VENV_DIR%\\Scripts\\activate
-                python -m pip install --upgrade twine
-                python -m twine upload --repository-url %PYPI% %ARTIFACT_DIR%\\*
+                python3 -m pip install --upgrade twine
+                python3 -m twine upload --repository-url %PYPI% %ARTIFACT_DIR%\\*
                 call deactivate
               """
             }
